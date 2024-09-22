@@ -53,11 +53,14 @@ class Metronome: ObservableObject {
         
         var accentTrack: AVAssetTrack
         var tickTrack: AVAssetTrack
+        var silenceTrack: AVAssetTrack
         do {
             let accent = AVURLAsset(url: Bundle.main.url(forResource: "metaccentlong", withExtension: ".wav")!)
             accentTrack = try await accent.load(.tracks)[0]
             let tick = AVURLAsset(url: Bundle.main.url(forResource: "metreglong", withExtension: ".wav")!)
             tickTrack = try await tick.load(.tracks)[0]
+            let silence = AVURLAsset(url: Bundle.main.url(forResource: "silence", withExtension: ".wav")!)
+            silenceTrack = try await silence.load(.tracks)[0]
             
             var mixParams: [AVMutableAudioMixInputParameters] = []
         
@@ -66,9 +69,15 @@ class Metronome: ObservableObject {
                 let quarterTrack = composition.addMutableTrack(withMediaType: .audio, preferredTrackID: CMPersistentTrackID())
                 let fullQuarterCMTime = CMTimeMakeWithSeconds(quarterTime, preferredTimescale: 600)
                 for i in 0..<4 {
+                    guard configuration.quarterAccents[i] != .disabled else {
+                        let quarterCMTime = CMTimeMakeWithSeconds(Double(i) * quarterTime, preferredTimescale: 600)
+                        let quarterTimeRange = CMTimeRange(start: CMTime.zero, duration: fullQuarterCMTime)
+                        try quarterTrack?.insertTimeRange(quarterTimeRange, of: silenceTrack, at: quarterCMTime)
+                        continue
+                    }
                     let quarterCMTime = CMTimeMakeWithSeconds(Double(i) * quarterTime, preferredTimescale: 600)
                     let quarterTimeRange = CMTimeRange(start: CMTime.zero, duration: fullQuarterCMTime)
-                    try quarterTrack?.insertTimeRange(quarterTimeRange, of: configuration.quarterAccents[i] ? accentTrack : tickTrack, at: quarterCMTime)
+                    try quarterTrack?.insertTimeRange(quarterTimeRange, of: configuration.quarterAccents[i] == .accent ? accentTrack : tickTrack, at: quarterCMTime)
                 }
                 
                 let quarterAccentParams = AVMutableAudioMixInputParameters(track: accentTrack)
@@ -85,8 +94,13 @@ class Metronome: ObservableObject {
                 let eighthTrack = composition.addMutableTrack(withMediaType: .audio, preferredTrackID: CMPersistentTrackID())
                 let fullEighthCMTime = CMTimeMakeWithSeconds(eighthTime, preferredTimescale: 600)
                 for i in 0..<8 {
+                    guard configuration.eighthAccents[i] != .disabled else {
+                        let eighthTimeRange = CMTimeRange(start: CMTime.zero, duration: fullEighthCMTime)
+                        try eighthTrack?.insertTimeRange(eighthTimeRange, of: silenceTrack, at: CMTimeMakeWithSeconds(Double(i) * eighthTime, preferredTimescale: eighthTrack?.naturalTimeScale ?? 600))
+                        continue
+                    }
                     let eighthTimeRange = CMTimeRange(start: CMTime.zero, duration: fullEighthCMTime)
-                    try eighthTrack?.insertTimeRange(eighthTimeRange, of: configuration.eighthAccents[i] ? accentTrack : tickTrack, at: CMTimeMakeWithSeconds(Double(i) * eighthTime, preferredTimescale: eighthTrack?.naturalTimeScale ?? 600))
+                    try eighthTrack?.insertTimeRange(eighthTimeRange, of: configuration.eighthAccents[i] == .accent ? accentTrack : tickTrack, at: CMTimeMakeWithSeconds(Double(i) * eighthTime, preferredTimescale: eighthTrack?.naturalTimeScale ?? 600))
                 }
                 
                 let eighthTickParams = AVMutableAudioMixInputParameters(track: tickTrack)
@@ -103,8 +117,13 @@ class Metronome: ObservableObject {
                 let tripletTrack = composition.addMutableTrack(withMediaType: .audio, preferredTrackID: CMPersistentTrackID())
                 let fullTripletCMTime = CMTimeMakeWithSeconds(tripletTime, preferredTimescale: 600)
                 for i in 0..<12 {
+                    guard configuration.tripletAccents[i] != .disabled else {
+                        let tripletTimeRange = CMTimeRange(start: CMTime.zero, duration: fullTripletCMTime)
+                        try tripletTrack?.insertTimeRange(tripletTimeRange, of: silenceTrack, at: CMTimeMakeWithSeconds(Double(i) * tripletTime, preferredTimescale:  tripletTrack?.naturalTimeScale ?? 600))
+                        continue
+                    }
                     let tripletTimeRange = CMTimeRange(start: CMTime.zero, duration: fullTripletCMTime)
-                    try tripletTrack?.insertTimeRange(tripletTimeRange, of: configuration.tripletAccents[i] ? accentTrack : tickTrack, at: CMTimeMakeWithSeconds(Double(i) * tripletTime, preferredTimescale:  tripletTrack?.naturalTimeScale ?? 600))
+                    try tripletTrack?.insertTimeRange(tripletTimeRange, of: configuration.tripletAccents[i] == .accent ? accentTrack : tickTrack, at: CMTimeMakeWithSeconds(Double(i) * tripletTime, preferredTimescale:  tripletTrack?.naturalTimeScale ?? 600))
                 }
                 tripletTrack?.preferredVolume = Float(tripletVolume / 100)
                 

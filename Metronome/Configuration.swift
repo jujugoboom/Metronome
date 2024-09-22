@@ -13,9 +13,9 @@ final class Configuration {
     var quarterVolume: Double
     var eighthVolume: Double
     var tripletVolume: Double
-    var quarterAccents: [Bool] = [Bool](repeating: true, count: 4)
-    var eighthAccents: [Bool] = [Bool](repeating: false, count: 8)
-    var tripletAccents: [Bool] = [Bool](repeating: false, count: 12)
+    var quarterAccents: [AccentSelection] = [AccentSelection](repeating: 2, count: 4)
+    var eighthAccents: [AccentSelection] = [AccentSelection](repeating: 1, count: 8)
+    var tripletAccents: [AccentSelection] = [AccentSelection](repeating: 1, count: 12)
     var playing: Bool = false
     
     init(bpm: Double, quarterVolume: Double, eighthVolume: Double, tripletVolume: Double, playing: Bool) {

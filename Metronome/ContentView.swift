@@ -32,13 +32,13 @@ struct ContentView: View {
     private var tripletVolume: Double {
         configuration.tripletVolume
     }
-    private var quarterAccents: [Bool] {
+    private var quarterAccents: [AccentSelection] {
         configuration.quarterAccents
     }
-    private var eighthAccents: [Bool] {
+    private var eighthAccents: [AccentSelection] {
         configuration.eighthAccents
     }
-    private var tripletAccents: [Bool] {
+    private var tripletAccents: [AccentSelection] {
         configuration.tripletAccents
     }
     private var bindingBpm: Binding<Double> {
@@ -77,19 +77,19 @@ struct ContentView: View {
                 Slider(value: bindingQuarterVolume, in: 0...100, onEditingChanged: sliderEditing)
                 Text("\(Int(quarterVolume))")
             }.padding()
-            AccentSelector(accents: quarterAccents, toggleAccent: {i in configuration.quarterAccents[i] = !configuration.quarterAccents[i]})
+            AccentSelector(accents: quarterAccents, toggleAccent: {i in configuration.quarterAccents[i] = AccentSelection.nextSelection(currentSelection: configuration.quarterAccents[i])})
             HStack{
                 Text("1/8")
                 Slider(value: bindingEighthVolume, in: 0...100, onEditingChanged: sliderEditing)
                 Text("\(Int(eighthVolume))")
             }.padding()
-            AccentSelector(accents: eighthAccents, toggleAccent: {i in configuration.eighthAccents[i] = !configuration.eighthAccents[i]})
+            AccentSelector(accents: eighthAccents, toggleAccent: {i in configuration.eighthAccents[i] = AccentSelection.nextSelection(currentSelection: configuration.eighthAccents[i])})
             HStack {
                 Text("1/3")
                 Slider(value: bindingTripletVolume, in: 0...100, onEditingChanged: sliderEditing)
                 Text("\(Int(tripletVolume))")
             }.padding()
-            AccentSelector(accents: tripletAccents, toggleAccent: {i in configuration.tripletAccents[i] = !configuration.tripletAccents[i]})
+            AccentSelector(accents: tripletAccents, toggleAccent: {i in configuration.tripletAccents[i] = AccentSelection.nextSelection(currentSelection: configuration.tripletAccents[i])})
             Button(action: {Task {!metronome.playing ? await play() : stop()}}) {
                 !metronome.playing ? Label("Play", systemImage: "play.fill") : Label("Pause", systemImage: "pause.fill")
             }.padding()
@@ -99,7 +99,7 @@ struct ContentView: View {
             } else if newPhase == .active {
                 Metronome.shared.setConfiguration(configuration: configuration)
             }
-        }
+        }.padding()
     }
         
     private func sliderEditing(editing: Bool) {

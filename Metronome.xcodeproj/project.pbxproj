@@ -78,6 +78,7 @@
 		1C30A49D2C9E864100FBB096 /* Exceptions for "Metronome" folder in "MetronomeWidgetExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				AccentSelector.swift,
 				AppModelContainer.swift,
 				Configuration.swift,
 				Metronome.swift,
